@@ -1,7 +1,8 @@
 import json
 import time
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from .base import Planner
 
@@ -27,18 +28,21 @@ class GeminiPlanner(Planner):
         self.timeout = timeout
         if not api_key:
             raise PlannerError("Gemini API key is not configured")
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(model)
+        self.model = model
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(timeout=int(timeout * 1000)),
+        )
 
     def plan(self, profile: dict, task_type: str, target_col: str) -> dict:
         prompt = build_prompt(profile, task_type, target_col)
         last_error = None
         for attempt in range(2):
             try:
-                response = self.model.generate_content(
-                    prompt,
-                    generation_config={"response_mime_type": "application/json"},
-                    request_options={"timeout": self.timeout},
+                response = self.client.models.generate_content(
+                    model=self.model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(response_mime_type="application/json"),
                 )
                 return json.loads(response.text)
             except Exception as exc:

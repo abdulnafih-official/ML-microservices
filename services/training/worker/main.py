@@ -31,7 +31,6 @@ def claim_job(conn) -> dict | None:
         )
         RETURNING id,user_id,payload,status,attempts
     """)).first()
-    conn.commit()
     return row_to_job(row) if row else None
 
 
@@ -54,9 +53,6 @@ def reap_stuck_jobs(conn) -> None:
                 locked_at=NULL WHERE id=:id
             """), {"id": row.id})
             release_quota(row.user_id)
-    conn.commit()
-
-
 def update_queue_length(conn) -> None:
     count = conn.execute(text("""
         SELECT COUNT(*) FROM training.jobs WHERE status='queued'
