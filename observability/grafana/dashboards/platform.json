@@ -1,0 +1,40 @@
+{
+  "title": "ML Platform",
+  "uid": "ml-platform",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Training jobs",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [{"expr": "sum by(status) (training_jobs_total)", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Queue length",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [{"expr": "training_queue_length", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Model cache hits and misses",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {"expr": "model_cache_hits_total", "refId": "A"},
+        {"expr": "model_cache_misses_total", "refId": "B"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Quota rejections",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [{"expr": "quota_rejections_total", "refId": "A"}]
+    }
+  ]
+}

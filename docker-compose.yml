@@ -1,0 +1,114 @@
+services:
+  postgres:
+    image: postgres:16
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mlplatform}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mlplatform}
+      POSTGRES_DB: ${POSTGRES_DB:-mlplatform}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-mlplatform}:${POSTGRES_PASSWORD:-mlplatform}@postgres:5432/${POSTGRES_DB:-mlplatform}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["8001:8000"]
+
+  training-api:
+    build:
+      context: .
+      dockerfile: services/training/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-mlplatform}:${POSTGRES_PASSWORD:-mlplatform}@postgres:5432/${POSTGRES_DB:-mlplatform}
+    volumes:
+      - tmp_uploads:/tmp/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth:
+        condition: service_started
+    ports: ["8002:8000"]
+
+  training-worker:
+    build:
+      context: .
+      dockerfile: services/training/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-mlplatform}:${POSTGRES_PASSWORD:-mlplatform}@postgres:5432/${POSTGRES_DB:-mlplatform}
+    command: ["python", "-m", "worker.main"]
+    volumes:
+      - tmp_uploads:/tmp/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["8003:8001"]
+
+  inference:
+    build:
+      context: .
+      dockerfile: services/inference/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-mlplatform}:${POSTGRES_PASSWORD:-mlplatform}@postgres:5432/${POSTGRES_DB:-mlplatform}
+    volumes:
+      - model_cache:/tmp/model-cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["8004:8000"]
+
+  user:
+    build:
+      context: .
+      dockerfile: services/user/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      - auth
+      - training-api
+      - inference
+    ports: ["8501:8501"]
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3001:3000"]
+
+volumes:
+  postgres_data:
+  tmp_uploads:
+  model_cache:

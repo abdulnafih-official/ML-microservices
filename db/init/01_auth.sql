@@ -1,0 +1,11 @@
+CREATE SCHEMA IF NOT EXISTS auth;
+
+CREATE TABLE IF NOT EXISTS auth.users (
+    id UUID PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    plan TEXT NOT NULL DEFAULT 'free',
+    models_trained INTEGER NOT NULL DEFAULT 0,
+    models_reserved INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
