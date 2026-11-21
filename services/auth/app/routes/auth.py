@@ -54,6 +54,6 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(current_user_id), db: Session = Depends(get_db)):
-    used, limit = get_usage(db, user.id, settings.FREE_MODEL_LIMIT)
+    _, limit = get_usage(db, user.id, settings.FREE_MODEL_LIMIT)
     return UserOut(id=user.id, email=user.email, plan=user.plan, models_trained=user.models_trained,
-                   models_reserved=used, limit=limit)
+                   models_reserved=user.models_reserved, limit=limit)
