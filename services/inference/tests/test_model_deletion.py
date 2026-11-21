@@ -25,7 +25,7 @@ def test_delete_model_file_uses_write_token(monkeypatch):
 
 
 def test_delete_model_file_requires_write_token(monkeypatch):
-    monkeypatch.delenv("HF_WRITE_TOKEN", raising=False)
+    monkeypatch.setenv("HF_WRITE_TOKEN", "")
 
     with pytest.raises(RuntimeError, match="HF_WRITE_TOKEN"):
         delete_model_file("account/private-models", "user/model/model.joblib")
