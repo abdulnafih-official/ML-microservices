@@ -6,11 +6,11 @@ from worker.trainers import get_estimator
 
 
 def test_pipeline_fits_on_fixture():
-    df = pd.DataFrame({"age": [20, 30, 40, 50], "city": ["A", "B", "A", "C"],
+    df = pd.DataFrame({"age": [20, 30, 40, 50], "city": ["A", None, "A", "C"],
                        "target": [0, 1, 0, 1]})
     plan = CleaningPlan.model_validate({"columns": [
         {"name": "age", "action": "keep", "reason": "numeric", "impute": "median", "scale": "standard"},
-        {"name": "city", "action": "keep", "reason": "categorical", "encode": "onehot"},
+        {"name": "city", "action": "keep", "reason": "categorical", "impute": "mode", "encode": "onehot"},
         {"name": "target", "action": "drop", "reason": "target"},
     ], "row_rules": {"drop_missing_target": True}})
     pipeline = build_pipeline(plan, get_estimator("random_forest", "classification"))

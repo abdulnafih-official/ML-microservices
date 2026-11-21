@@ -15,6 +15,8 @@ def build_preprocessor(plan: CleaningPlan) -> ColumnTransformer:
         steps = []
         if column.impute.value != "none":
             strategy = column.impute.value
+            if strategy == "mode":
+                strategy = "most_frequent"
             if strategy == "constant":
                 steps.append(("imputer", SimpleImputer(strategy="constant", fill_value=0)))
             else:
