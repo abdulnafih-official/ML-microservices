@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 from api_client import login, register
-from session import set_token
+from session import render_logout, set_token
 
 st.set_page_config(page_title="ML Platform", page_icon="ML")
 
@@ -28,3 +28,5 @@ with tabs[1]:
             st.success("Account created")
         except requests.HTTPError as exc:
             st.error(exc.response.text if exc.response is not None else str(exc))
+
+render_logout()
