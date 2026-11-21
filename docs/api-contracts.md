@@ -20,6 +20,7 @@ Job statuses: `queued`, `running`, `succeeded`, `failed`.
 
 - `GET /models` list caller models
 - `GET /models/{id}` model metadata and cleaning plan
+- `DELETE /models/{id}` permanently deletes the caller's model artifact and metadata and restores one quota slot
 - `POST /predict/{id}` `{column: value}` -> `{prediction, probabilities?}`
 
 ## Cleaning plan

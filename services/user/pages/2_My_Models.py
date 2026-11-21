@@ -1,6 +1,6 @@
 import streamlit as st
 
-from api_client import list_models
+from api_client import delete_model, list_models
 from session import get_token, require_login
 
 st.title("My Models")
@@ -26,3 +26,19 @@ if require_login():
                 st.markdown(
                     f"- **{column['name']}**: {column['action']} - {column['reason']}"
                 )
+            confirmed = st.checkbox(
+                "Permanently delete this model and its stored artifact",
+                key=f"confirm_delete_{model['id']}",
+            )
+            if st.button(
+                "Delete model",
+                key=f"delete_model_{model['id']}",
+                type="secondary",
+                disabled=not confirmed,
+            ):
+                try:
+                    delete_model(token, model["id"])
+                    st.success("Model and stored artifact deleted; quota slot restored.")
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Could not delete model: {exc}")

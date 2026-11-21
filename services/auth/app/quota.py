@@ -9,7 +9,7 @@ from .models import User
 def reserve_slot(db: Session, user_id: UUID, limit: int) -> bool:
     result = db.execute(
         update(User)
-        .where(User.id == user_id, User.models_reserved < limit)
+        .where(User.id == user_id, User.models_trained + User.models_reserved < limit)
         .values(models_reserved=User.models_reserved + 1)
     )
     db.commit()
@@ -25,4 +25,4 @@ def release_slot(db: Session, user_id: UUID) -> None:
 
 def get_usage(db: Session, user_id: UUID, limit: int) -> tuple[int, int]:
     user = db.get(User, user_id)
-    return (user.models_reserved if user else 0), limit
+    return (user.models_trained + user.models_reserved if user else 0), limit

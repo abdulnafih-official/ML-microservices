@@ -59,6 +59,13 @@ def get_model(token, model_id):
     return response.json()
 
 
+def delete_model(token, model_id):
+    response = requests.delete(
+        f"{INFERENCE_URL}/models/{model_id}", headers=_headers(token), timeout=30
+    )
+    response.raise_for_status()
+
+
 def predict(token, model_id, features):
     response = requests.post(
         f"{INFERENCE_URL}/predict/{model_id}", headers=_headers(token), json=features, timeout=30

@@ -23,6 +23,15 @@ def touch(path: str) -> None:
         os.utime(path, None)
 
 
+def remove_cached_model(model_id: str) -> None:
+    with _locks_guard:
+        lock = _locks.setdefault(model_id, threading.Lock())
+    with lock:
+        path = cache_path(model_id)
+        if os.path.isfile(path):
+            os.remove(path)
+
+
 def get_pipeline(model_row) -> object:
     model_id = str(model_row["id"])
     with _locks_guard:
