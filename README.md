@@ -1,6 +1,6 @@
 # ML Platform
 
-An end-to-end microservice demo for authentication, AI-assisted training, model storage,
+An end-to-end microservice for authentication, AI-assisted training, model storage,
 inference, and monitoring.
 
 ## Architecture
