@@ -18,7 +18,7 @@ inference, and monitoring.
 1. Copy `.env.example` to `.env` and set secrets and optional provider credentials.
 2. Run `docker compose up --build`.
 3. Open Streamlit at `http://localhost:8501`.
-4. Open Grafana at `http://localhost:3000` and Prometheus at `http://localhost:9090`.
+4. Open Grafana at `http://localhost:3001` and Prometheus at `http://localhost:9090`.
 
 ## Development
 
