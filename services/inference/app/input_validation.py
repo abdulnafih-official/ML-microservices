@@ -26,3 +26,18 @@ def validate_payload(payload: dict, feature_schema: dict) -> pd.DataFrame:
         else:
             row[name] = value
     return pd.DataFrame([row], columns=list(feature_schema.keys()))
+
+
+def validate_batch_payload(payload: list, feature_schema: dict, max_rows: int) -> pd.DataFrame:
+    if not isinstance(payload, list) or not payload:
+        raise HTTPException(status_code=422, detail="Payload must be a non-empty JSON array")
+    if len(payload) > max_rows:
+        raise HTTPException(status_code=413, detail=f"Batch exceeds the {max_rows}-row limit")
+
+    frames = []
+    for index, row in enumerate(payload, start=1):
+        try:
+            frames.append(validate_payload(row, feature_schema))
+        except HTTPException as exc:
+            raise HTTPException(status_code=exc.status_code, detail=f"Row {index}: {exc.detail}") from exc
+    return pd.concat(frames, ignore_index=True)

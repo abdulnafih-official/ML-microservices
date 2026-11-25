@@ -7,3 +7,4 @@ class Settings(BaseServiceSettings):
     HF_WRITE_TOKEN: str = ""
     CACHE_DIR: str = "/tmp/model-cache"
     CACHE_TTL_MINUTES: int = 30
+    MAX_BATCH_PREDICTIONS: int = 100000

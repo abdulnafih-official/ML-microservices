@@ -72,3 +72,14 @@ def predict(token, model_id, features):
     )
     response.raise_for_status()
     return response.json()
+
+
+def predict_batch(token, model_id, rows):
+    response = requests.post(
+        f"{INFERENCE_URL}/predict/{model_id}/batch",
+        headers=_headers(token),
+        json=rows,
+        timeout=120,
+    )
+    response.raise_for_status()
+    return response.json()["results"]

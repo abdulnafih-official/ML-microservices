@@ -22,6 +22,7 @@ Job statuses: `queued`, `running`, `succeeded`, `failed`.
 - `GET /models/{id}` model metadata and cleaning plan
 - `DELETE /models/{id}` permanently deletes the caller's model artifact and metadata and restores one quota slot
 - `POST /predict/{id}` `{column: value}` -> `{prediction, probabilities?}`
+- `POST /predict/{id}/batch` `[{column: value}, ...]` -> `{results: [{prediction, probabilities?}, ...]}`; batches are limited to 100,000 rows
 
 ## Cleaning plan
 
