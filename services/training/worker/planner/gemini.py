@@ -11,14 +11,51 @@ class PlannerError(RuntimeError):
     pass
 
 
+PLAN_RESPONSE_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "columns": {
+            "type": "ARRAY",
+            "items": {
+                "type": "OBJECT",
+                "properties": {
+                    "name": {"type": "STRING"},
+                    "action": {"type": "STRING", "enum": ["keep", "drop"]},
+                    "reason": {"type": "STRING"},
+                    "impute": {
+                        "type": "STRING",
+                        "enum": ["median", "mean", "mode", "constant", "none"],
+                    },
+                    "encode": {
+                        "type": "STRING",
+                        "enum": ["onehot", "ordinal", "none"],
+                    },
+                    "scale": {"type": "STRING", "enum": ["none", "standard"]},
+                },
+                "required": ["name", "action", "reason", "impute", "encode", "scale"],
+            },
+        },
+        "row_rules": {
+            "type": "OBJECT",
+            "properties": {
+                "drop_missing_target": {"type": "BOOLEAN"},
+            },
+            "required": ["drop_missing_target"],
+        },
+    },
+    "required": ["columns", "row_rules"],
+}
+
+
 def build_prompt(profile: dict, task_type: str, target_col: str) -> str:
     return (
         "Return JSON only matching: "
         '{"columns":[{"name":"column","action":"keep|drop","reason":"text",'
         '"impute":"median|mean|mode|constant|none","encode":"onehot|ordinal|none","scale":"none|standard"}],'
         '"row_rules":{"drop_missing_target":true}}. '
-        f"The task type is {task_type}. Never include target column {target_col!r} as a feature "
-        "and describe every column exactly once. Use only the aggregate profile below. "
+        f"The task type is {task_type}. Include every column in profile.columns exactly once. "
+        f"Include target column {target_col!r} exactly once with action 'drop'; never keep it. "
+        "Use only the aggregate profile below. "
         f"Profile: {json.dumps(profile, ensure_ascii=False)}"
     )
 
@@ -42,7 +79,10 @@ class GeminiPlanner(Planner):
                 response = self.client.models.generate_content(
                     model=self.model,
                     contents=prompt,
-                    config=types.GenerateContentConfig(response_mime_type="application/json"),
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=PLAN_RESPONSE_SCHEMA,
+                    ),
                 )
                 return json.loads(response.text)
             except Exception as exc:
